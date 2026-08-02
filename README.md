@@ -3,9 +3,9 @@
 A private study and exam-practice tool for Cambridge International AS Level
 Economics (9708). Built by Karthik Varadharajan.
 
-This repository currently contains **the foundation only** — the syllabus
-spine, the attempt log, the assessment model, and the provider interface.
-No question generation, marking or dashboard yet, by design.
+Currently implemented: the syllabus spine, the attempt log, the assessment
+model, and the **MCQ engine** — generation, validation, weighted paper
+assembly, and marking. Essay marking and the full dashboard are next.
 
 ---
 
@@ -21,6 +21,9 @@ cp .env.example .env          # add your GROQ_API_KEY
 # cambridgeinternational.org and save it as data/9708-syllabus.pdf
 python scripts/build_syllabus_spine.py
 python scripts/check_setup.py
+
+# fill the question bank (this is the only step that spends tokens)
+python scripts/bank_questions.py --all --per-topic 3
 
 streamlit run app.py
 ```
@@ -77,13 +80,19 @@ dropped in as a straight replacement when the first LLM feature lands.
 src/syllabus/    models.py    spine domain objects
                  parser.py    PDF -> spine (pure text->spine layer is testable)
                  assessment.py  paper structure, AO weights, micro/macro split
+src/questions/   models.py    MCQItem, option shuffling
+                 validator.py deterministic quality gate before banking
+                 mcq_generator.py  prompt, parse, validate, bank
+                 paper_builder.py  weighted selection, balanced vs targeted
+src/marking/     mcq_marker.py     zero-token marking, writes the attempt log
 src/store/       schema.sql   attempt log + topic_performance view
                  db.py        thin SQLite layer, no ORM
 src/llm/         provider.py  LLMProvider protocol + GroqProvider
                  exceptions.py  LLMRateLimitError with retry-time parsing
-scripts/         build_syllabus_spine.py, check_setup.py
-tests/           44 tests, no network required
-app.py           Streamlit shell: spine browser, progress, exam structure
+scripts/         build_syllabus_spine.py, check_setup.py, bank_questions.py
+tests/           88 tests, no network required
+app.py           Streamlit home: spine browser, progress, exam structure
+pages/1_MCQ_Practice.py   take a test, submit, review
 ```
 
 Run the suite with `python -m pytest tests -q`.
@@ -105,15 +114,56 @@ for. Run it first and read the output.
 
 ---
 
+## The MCQ engine
+
+**Generation is a batch job, never part of serving a test.**
+`scripts/bank_questions.py` fills the bank; the app only reads from it. The
+request path contains no LLM call at all, which is what makes a free tier with
+a daily token ceiling workable.
+
+```bash
+python scripts/bank_questions.py --all --per-topic 3   # every topic
+python scripts/bank_questions.py --topic 4.3 --count 5 # one topic
+python scripts/bank_questions.py --thin 5              # top up thin topics
+python scripts/bank_questions.py --all --dry-run       # spend nothing, see the plan
+```
+
+A rate limit stops the run cleanly and reports the wait; everything banked
+before that point is kept.
+
+**Nothing generated is trusted.** Every item passes `validator.py` before it is
+banked, and a failure is reported with a reason rather than silently repaired —
+a repaired question is an unreviewed question. The rules catch real failure
+modes: "all of the above" forms Cambridge never uses, duplicate or near-duplicate
+options, missing distractor rationales, stems that quiz the syllabus rather than
+the economics, and the classic tell where the correct option is far longer than
+every distractor and so is answerable on length alone.
+
+**Options are reshuffled after validation.** Models place the correct answer at a
+favourite position far more often than chance; left alone, the student learns the
+position rather than the economics.
+
+**Paper assembly has two modes.** `balanced` weights topics by outcome count, so
+4.3 (12 outcomes) comes up more than 5.1 (1 outcome), as in the real paper.
+`targeted` weights toward weak and untested topics — this is what makes the tool
+worth more than a question bank. Selection is seeded and reproducible, and
+questions already answered are excluded so a score reflects understanding
+rather than recall.
+
+**Marking costs nothing.** Answer-key comparison in code, with the rationales
+written at banking time, so review works offline and never touches the budget.
+A skipped question scores zero and is still recorded — it is evidence about a
+topic, not missing data.
+
 ## Roadmap
 
-1. **MCQ generator + timed Paper 1 mock.** Marking costs zero LLM tokens.
-   The LLM writes distractor rationales only, cached per question.
+1. ~~MCQ generator + timed Paper 1 mock~~ — done.
 2. **Syllabus knowledge base Q&A**, scoped to AS content. Questions falling in
    topics 7.1–11.6 are declined rather than answered.
 3. **Essay marker**, two-pass: pass 1 extracts the student's claims and
    evaluative judgements into a validated AO-tagged object; pass 2 sees only
-   that object plus the level descriptors and assigns a level per AO.
+   that object plus the level descriptors and assigns a level per AO. Needs the
+   levels descriptors from the specimen Paper 2 mark scheme first.
 4. **Weakness dashboard**, reading the attempt log.
 
 ### Known gaps, recorded not hidden

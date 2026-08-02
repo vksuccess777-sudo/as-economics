@@ -192,3 +192,60 @@ class Store:
                 table: conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
                 for table in ("question", "attempt", "response", "calibration_case")
             }
+
+    # ---- question bank ----------------------------------------------
+
+    def bank_counts_by_topic(
+        self, paper_key: str = "paper_1", subject: str = "economics"
+    ) -> dict[str, int]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT topic_code, COUNT(*) AS n FROM question "
+                "WHERE subject = ? AND paper_key = ? GROUP BY topic_code",
+                (subject, paper_key),
+            ).fetchall()
+        return {r["topic_code"]: r["n"] for r in rows}
+
+    def fetch_questions(self, question_ids: list[str]) -> list[dict[str, Any]]:
+        if not question_ids:
+            return []
+        placeholders = ",".join("?" * len(question_ids))
+        with self.connect() as conn:
+            rows = conn.execute(
+                f"SELECT * FROM question WHERE id IN ({placeholders})", question_ids
+            ).fetchall()
+        by_id = {r["id"]: dict(r) for r in rows}
+        return [by_id[qid] for qid in question_ids if qid in by_id]
+
+    def candidate_questions(
+        self,
+        *,
+        paper_key: str = "paper_1",
+        subject: str = "economics",
+        topic_codes: list[str] | None = None,
+        exclude_answered: bool = True,
+    ) -> list[dict[str, Any]]:
+        """Questions available to put in a paper.
+
+        `exclude_answered` keeps a test from re-serving something already sat,
+        so a score reflects understanding rather than recall of a past attempt.
+        """
+        sql = [
+            "SELECT q.* FROM question q WHERE q.subject = ? AND q.paper_key = ?"
+        ]
+        params: list[Any] = [subject, paper_key]
+
+        if topic_codes:
+            sql.append(f"AND q.topic_code IN ({','.join('?' * len(topic_codes))})")
+            params.extend(topic_codes)
+
+        if exclude_answered:
+            sql.append(
+                "AND q.id NOT IN (SELECT question_id FROM response "
+                "WHERE awarded IS NOT NULL)"
+            )
+
+        sql.append("ORDER BY q.created_at")
+        with self.connect() as conn:
+            rows = conn.execute(" ".join(sql), params).fetchall()
+        return [dict(r) for r in rows]

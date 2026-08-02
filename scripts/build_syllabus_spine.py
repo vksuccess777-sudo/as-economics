@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.config import settings  # noqa: E402
 from src.syllabus.parser import SyllabusParseError, parse_pdf  # noqa: E402
 
+
 # Published shape of the AS syllabus (2026-2028):
 # topics 1.1-1.6, 2.1-2.5, 3.1-3.3, 4.1-4.6, 5.1-5.4, 6.1-6.5.
 EXPECTED_AS_TOPICS_PER_UNIT = {"1": 6, "2": 5, "3": 3, "4": 6, "5": 4, "6": 5}
@@ -88,10 +89,7 @@ def main() -> int:
     for unit in spine.units:
         print(f"  {unit.code}  {unit.title}")
         for topic in unit.topics:
-            print(
-                f"      {topic.code:<5} {topic.title}  "
-                f"({len(topic.outcomes)} outcomes)"
-            )
+            print(f"      {topic.code:<5} {topic.title}  ({len(topic.outcomes)} outcomes)")
     print(f"\nWrote {path}")
 
     warnings = check_as_shape(spine) if args.level == "AS" else []
