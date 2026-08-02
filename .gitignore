@@ -1,0 +1,17 @@
+# Secrets
+.env
+
+# Cambridge copyright: the syllabus PDF, past papers, mark schemes and
+# anything generated from them stay local. Never commit them.
+data/*.pdf
+data/*.json
+data/*.sqlite3
+data/papers/
+data/scripts/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

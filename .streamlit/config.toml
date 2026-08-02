@@ -1,0 +1,7 @@
+[server]
+# Stops the dev-mode file watcher walking optional submodules of installed
+# packages and printing alarming (but harmless) ModuleNotFoundError noise.
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false
