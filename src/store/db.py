@@ -26,6 +26,11 @@ def new_id(prefix: str) -> str:
 
 
 class Store:
+    # Every table the app queries. Checking only one was not enough: a
+    # partially-applied schema passed is_initialised() and then crashed on the
+    # first query against a missing table.
+    REQUIRED_TABLES = ("question", "attempt", "response", "calibration_case")
+
     def __init__(self, db_path: str | Path):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -52,13 +57,15 @@ class Store:
             )
 
     def is_initialised(self) -> bool:
+        """True only when every required table exists."""
         if not self.db_path.exists():
             return False
         with self.connect() as conn:
-            row = conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='response'"
-            ).fetchone()
-        return row is not None
+            rows = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        present = {r["name"] for r in rows}
+        return all(t in present for t in self.REQUIRED_TABLES)
 
     # ---- writes -----------------------------------------------------
 

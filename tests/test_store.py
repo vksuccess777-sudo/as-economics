@@ -131,3 +131,34 @@ def test_responses_cascade_when_an_attempt_is_deleted(store):
     with store.connect() as conn:
         conn.execute("DELETE FROM attempt WHERE id = ?", (attempt,))
     assert store.counts()["response"] == 0
+
+
+def test_partial_schema_is_not_reported_as_initialised(tmp_path):
+    """Regression: a db holding some tables but not `question` passed the check
+    and then crashed the app on its first query."""
+    import sqlite3
+
+    path = tmp_path / "partial.sqlite3"
+    conn = sqlite3.connect(path)
+    conn.execute("CREATE TABLE response (id INTEGER PRIMARY KEY)")
+    conn.commit()
+    conn.close()
+
+    store = Store(path)
+    assert not store.is_initialised()
+
+
+def test_initialise_repairs_a_partial_schema_without_losing_rows(tmp_path):
+    path = tmp_path / "repair.sqlite3"
+    store = Store(path)
+    store.initialise()
+    qid = _question(store, "1.1")
+
+    with store.connect() as conn:
+        conn.execute("DROP TABLE calibration_case")
+    assert not store.is_initialised()
+
+    store.initialise()
+    assert store.is_initialised()
+    assert store.counts()["question"] == 1
+    assert store.fetch_questions([qid])[0]["id"] == qid
