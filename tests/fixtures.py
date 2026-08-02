@@ -46,6 +46,8 @@ Back to contents page www.cambridgeinternational.org/alevel 18
 2 The price system and the microeconomy (AS Level) continued
 2.1 Demand and supply curves continued
 2.1.2 individual and market demand and supply
+2.1.5 causes of a shift in the demand curve (D)
+2.1.6 causes of a shift in the supply curve (S)
 4 The Macroeconomy (AS Level)
 Candidates will consider national income as the most important measurement of macroeconomic
 performance.
@@ -66,6 +68,8 @@ A Level content
 7 The price system and the microeconomy (A Level)
 7.1 Utility
 7.1.1 definition and calculation of total utility and marginal utility
+7.2 Indifference curves and budget lines
+7.2.1 meaning of an indifference curve and a budget line
 9 The macroeconomy (A Level)
 9.1 The circular flow of income
 9.1.1 the multiplier process:

@@ -433,3 +433,36 @@ def test_near_duplicate_options_are_caught_across_punctuation_and_case(variant):
     item = good_item(options={**good_item().options, "C": variant})
     with pytest.raises(ValidationError, match="duplicates"):
         validate(item)
+
+
+def test_short_numeric_answers_are_exempt_from_the_length_ratio_rule():
+    """Regression: "2.5" vs "1.5" is a 1.67x ratio that means nothing.
+
+    The rule was rejecting real elasticity calculations on a first bank run.
+    """
+    item = good_item(
+        stem="A 4% rise in income causes a 10% rise in quantity demanded. "
+             "What is the income elasticity of demand?",
+        options={"A": "2.5", "B": "0.4", "C": "-2.5", "D": "1.4"},
+        answer_key="A",
+        rationales={
+            "A": "10 divided by 4 gives 2.5, a normal luxury good.",
+            "B": "Divides the wrong way round.",
+            "C": "Applies an inferior-good sign incorrectly.",
+            "D": "Subtracts instead of dividing.",
+        },
+    )
+    validate(item)
+
+
+def test_long_correct_answers_are_still_caught():
+    """The exemption must not disable the rule where it actually matters."""
+    item = good_item(options={
+        "A": "Consumer surplus matters because it measures the difference "
+             "between what buyers are willing to pay and what they actually pay",
+        "B": "It measures producer revenue",
+        "C": "It measures total market output",
+        "D": "It measures the tax burden",
+    })
+    with pytest.raises(ValidationError, match="longer than every distractor"):
+        validate(item)

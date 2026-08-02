@@ -29,7 +29,9 @@ def test_continued_topic_header_does_not_duplicate_the_topic(spine):
     """'2.1 Demand and supply curves continued' must reopen 2.1, not add it."""
     unit_2 = next(u for u in spine.units if u.code == "2")
     assert [t.code for t in unit_2.topics] == ["2.1"]
-    assert [o.code for o in unit_2.topics[0].outcomes] == ["2.1.1", "2.1.2"]
+    assert [o.code for o in unit_2.topics[0].outcomes] == [
+        "2.1.1", "2.1.2", "2.1.5", "2.1.6",
+    ]
 
 
 def test_outcome_codes_are_not_mistaken_for_topic_codes(spine):
@@ -89,6 +91,7 @@ def test_command_words_are_parsed_with_wrapped_meanings(spine):
 def test_a_level_section_can_be_parsed_separately():
     a_spine = parse_text(SYLLABUS_EXCERPT, level="A")
     assert [u.code for u in a_spine.units] == ["7", "9"]
+    assert [t.code for t in a_spine.units[0].topics] == ["7.1", "7.2"]
     assert a_spine.outcome("9.1.1").bullets == (
         "calculation of:",
         "average and marginal propensities to save (aps and mps)",

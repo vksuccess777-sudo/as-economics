@@ -84,15 +84,18 @@ src/questions/   models.py    MCQItem, option shuffling
                  validator.py deterministic quality gate before banking
                  mcq_generator.py  prompt, parse, validate, bank
                  paper_builder.py  weighted selection, balanced vs targeted
+src/tutor/       retriever.py lexical search over the spine + scope guards
+                 explainer.py grounded explanation, refuses out-of-scope
 src/marking/     mcq_marker.py     zero-token marking, writes the attempt log
 src/store/       schema.sql   attempt log + topic_performance view
                  db.py        thin SQLite layer, no ORM
 src/llm/         provider.py  LLMProvider protocol + GroqProvider
                  exceptions.py  LLMRateLimitError with retry-time parsing
 scripts/         build_syllabus_spine.py, check_setup.py, bank_questions.py
-tests/           88 tests, no network required
+tests/           110 tests, no network required
 app.py           Streamlit home: spine browser, progress, exam structure
 pages/1_MCQ_Practice.py   take a test, submit, review
+pages/2_Concept_Tutor.py  ask about a concept, syllabus-grounded
 ```
 
 Run the suite with `python -m pytest tests -q`.
@@ -158,8 +161,14 @@ topic, not missing data.
 ## Roadmap
 
 1. ~~MCQ generator + timed Paper 1 mock~~ — done.
-2. **Syllabus knowledge base Q&A**, scoped to AS content. Questions falling in
-   topics 7.1–11.6 are declined rather than answered.
+2. ~~Concept tutor, scoped to AS content~~ — done. Lexical retrieval over the
+   spine (no embeddings, no new dependency). Two guards: a relevance floor, and
+   a vocabulary-coverage check that stops a single shared word putting a
+   question in scope — "indifference curves" scored well against "Demand and
+   supply curves" on the word "curves" alone. Out-of-scope questions never
+   reach the model, so they cost nothing. Generate the optional A Level spine
+   with `python scripts/build_syllabus_spine.py --level A --out data/syllabus_spine_a.json`
+   and the tutor will say "that's A Level" instead of "I don't know".
 3. **Essay marker**, two-pass: pass 1 extracts the student's claims and
    evaluative judgements into a validated AO-tagged object; pass 2 sees only
    that object plus the level descriptors and assigns a level per AO. Needs the
