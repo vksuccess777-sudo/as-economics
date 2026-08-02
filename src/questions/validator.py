@@ -38,6 +38,12 @@ MAX_OPTION_CHARS = 220
 # is a real tell.
 MAX_CORRECT_LENGTH_RATIO = 1.6
 
+# Below this length the ratio is noise, not a signal: a numeric answer of "2.5"
+# against a distractor of "1.5" is a 1.67x "violation" that means nothing. This
+# exemption exists because the rule was rejecting legitimate elasticity
+# calculations — exactly the questions most worth banking.
+LENGTH_RATIO_MIN_CHARS = 25
+
 
 class ValidationError(ValueError):
     """Raised with a human-readable reason for rejection."""
@@ -90,7 +96,11 @@ def validate(item: MCQItem, *, known_topic_codes: set[str] | None = None) -> Non
     longest_distractor = max(
         len(item.options[k].strip()) for k in OPTION_KEYS if k != item.answer_key
     )
-    if longest_distractor and correct_len / longest_distractor > MAX_CORRECT_LENGTH_RATIO:
+    if (
+        correct_len >= LENGTH_RATIO_MIN_CHARS
+        and longest_distractor
+        and correct_len / longest_distractor > MAX_CORRECT_LENGTH_RATIO
+    ):
         raise ValidationError(
             "correct option is much longer than every distractor "
             f"({correct_len} vs {longest_distractor} chars) — answerable on length alone"
