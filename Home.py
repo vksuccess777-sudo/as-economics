@@ -124,6 +124,19 @@ if spine is None:
         4. Reload this page
         """
     )
+    with st.expander("🔧 Debug info (temporary — remove once fixed)"):
+        try:
+            import streamlit as _st_check
+            secret_present = "SYLLABUS_SPINE_B64" in _st_check.secrets
+            secret_len = len(_st_check.secrets.get("SYLLABUS_SPINE_B64", "")) if secret_present else 0
+        except Exception as exc:  # noqa: BLE001
+            secret_present = f"error checking: {exc}"
+            secret_len = 0
+        st.write("spine_path:", str(settings.spine_path))
+        st.write("spine_path exists:", settings.spine_path.exists())
+        st.write("spine_path.parent exists:", settings.spine_path.parent.exists())
+        st.write("SYLLABUS_SPINE_B64 secret present:", secret_present)
+        st.write("SYLLABUS_SPINE_B64 secret length:", secret_len)
     st.stop()
 
 # ---------------------------------------------------------------------------
