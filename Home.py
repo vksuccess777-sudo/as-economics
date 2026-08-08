@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from src import config as config_module
 from src.config import settings
 from src.store.db import Store
 from src.syllabus import assessment
@@ -137,6 +138,8 @@ if spine is None:
         st.write("spine_path.parent exists:", settings.spine_path.parent.exists())
         st.write("SYLLABUS_SPINE_B64 secret present:", secret_present)
         st.write("SYLLABUS_SPINE_B64 secret length:", secret_len)
+        st.write("bootstrap attempted:", getattr(config_module, "_bootstrap_attempted", "n/a"))
+        st.write("bootstrap error:", getattr(config_module, "_bootstrap_error", "n/a"))
     st.stop()
 
 # ---------------------------------------------------------------------------

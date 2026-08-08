@@ -46,6 +46,9 @@ class Settings:
 
 settings = Settings()
 
+_bootstrap_error: str | None = None
+_bootstrap_attempted = False
+
 
 def _bootstrap_spine_from_secrets() -> None:
     """Recreate the gitignored syllabus spine on Streamlit Community Cloud.
@@ -57,19 +60,28 @@ def _bootstrap_spine_from_secrets() -> None:
     No-ops locally, since the real file already exists there, and no-ops if
     the secret isn't set (e.g. running locally without Streamlit secrets).
     """
+    global _bootstrap_error, _bootstrap_attempted
+    _bootstrap_attempted = True
     if settings.spine_path.exists():
         return
     try:
         import base64
 
         import streamlit as st
-    except ImportError:  # pragma: no cover - streamlit always present at runtime
-        return
-    encoded = st.secrets.get("SYLLABUS_SPINE_B64") if hasattr(st, "secrets") else None
-    if not encoded:
-        return
-    settings.spine_path.parent.mkdir(parents=True, exist_ok=True)
-    settings.spine_path.write_bytes(base64.b64decode(encoded))
+
+        encoded = st.secrets.get("SYLLABUS_SPINE_B64") if hasattr(st, "secrets") else None
+        if not encoded:
+            _bootstrap_error = "secret not found or empty at bootstrap time"
+            return
+        settings.spine_path.parent.mkdir(parents=True, exist_ok=True)
+        decoded = base64.b64decode(encoded)
+        settings.spine_path.write_bytes(decoded)
+        if not settings.spine_path.exists():
+            _bootstrap_error = "write_bytes returned but file still doesn't exist"
+    except ImportError:
+        _bootstrap_error = "streamlit not importable at this point"
+    except Exception as exc:  # noqa: BLE001 - we want to surface this, not hide it
+        _bootstrap_error = f"{type(exc).__name__}: {exc}"
 
 
 _bootstrap_spine_from_secrets()
