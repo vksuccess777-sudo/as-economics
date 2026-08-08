@@ -101,6 +101,25 @@ def get_spine() -> SyllabusSpine | None:
 spine = get_spine()
 store = get_store()
 
+with st.sidebar.expander("🔧 Debug info (temporary — remove once fixed)"):
+    try:
+        import streamlit as _st_check
+        spine_secret_present = "SYLLABUS_SPINE_B64" in _st_check.secrets
+        spine_secret_len = len(_st_check.secrets.get("SYLLABUS_SPINE_B64", "")) if spine_secret_present else 0
+        db_secret_present = "DB_SQLITE_B64" in _st_check.secrets
+        db_secret_len = len(_st_check.secrets.get("DB_SQLITE_B64", "")) if db_secret_present else 0
+    except Exception as exc:  # noqa: BLE001
+        spine_secret_present = spine_secret_len = db_secret_present = db_secret_len = f"error: {exc}"
+    st.write("spine_path exists:", settings.spine_path.exists())
+    st.write("SYLLABUS_SPINE_B64 present / length:", spine_secret_present, spine_secret_len)
+    st.write("db_path:", str(settings.db_path))
+    st.write("db_path exists:", settings.db_path.exists())
+    if settings.db_path.exists():
+        st.write("db_path size (bytes):", settings.db_path.stat().st_size)
+    st.write("DB_SQLITE_B64 present / length:", db_secret_present, db_secret_len)
+    st.write("bootstrap attempted:", getattr(config_module, "_bootstrap_attempted", "n/a"))
+    st.write("bootstrap errors:", getattr(config_module, "_bootstrap_errors", "n/a"))
+
 # ---------------------------------------------------------------------------
 # Hero
 # ---------------------------------------------------------------------------
@@ -125,21 +144,6 @@ if spine is None:
         4. Reload this page
         """
     )
-    with st.expander("🔧 Debug info (temporary — remove once fixed)"):
-        try:
-            import streamlit as _st_check
-            secret_present = "SYLLABUS_SPINE_B64" in _st_check.secrets
-            secret_len = len(_st_check.secrets.get("SYLLABUS_SPINE_B64", "")) if secret_present else 0
-        except Exception as exc:  # noqa: BLE001
-            secret_present = f"error checking: {exc}"
-            secret_len = 0
-        st.write("spine_path:", str(settings.spine_path))
-        st.write("spine_path exists:", settings.spine_path.exists())
-        st.write("spine_path.parent exists:", settings.spine_path.parent.exists())
-        st.write("SYLLABUS_SPINE_B64 secret present:", secret_present)
-        st.write("SYLLABUS_SPINE_B64 secret length:", secret_len)
-        st.write("bootstrap attempted:", getattr(config_module, "_bootstrap_attempted", "n/a"))
-        st.write("bootstrap error:", getattr(config_module, "_bootstrap_error", "n/a"))
     st.stop()
 
 # ---------------------------------------------------------------------------
