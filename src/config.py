@@ -45,3 +45,31 @@ class Settings:
 
 
 settings = Settings()
+
+
+def _bootstrap_spine_from_secrets() -> None:
+    """Recreate the gitignored syllabus spine on Streamlit Community Cloud.
+
+    data/syllabus_spine.json is deliberately kept out of GitHub (Cambridge
+    copyright — see .gitignore), so a fresh cloud checkout never has it. Instead
+    of committing it, a base64 copy lives in the app's Secrets (private to the
+    deployment, never in git) and gets rebuilt into a real file on first run.
+    No-ops locally, since the real file already exists there, and no-ops if
+    the secret isn't set (e.g. running locally without Streamlit secrets).
+    """
+    if settings.spine_path.exists():
+        return
+    try:
+        import base64
+
+        import streamlit as st
+    except ImportError:  # pragma: no cover - streamlit always present at runtime
+        return
+    encoded = st.secrets.get("SYLLABUS_SPINE_B64") if hasattr(st, "secrets") else None
+    if not encoded:
+        return
+    settings.spine_path.parent.mkdir(parents=True, exist_ok=True)
+    settings.spine_path.write_bytes(base64.b64decode(encoded))
+
+
+_bootstrap_spine_from_secrets()
