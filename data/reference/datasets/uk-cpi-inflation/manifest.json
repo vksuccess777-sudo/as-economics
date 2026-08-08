@@ -1,0 +1,11 @@
+{
+  "slug": "uk-cpi-inflation",
+  "title": "CPI annual inflation rate, United Kingdom, 2015-2024",
+  "source": "ons",
+  "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23",
+  "licence": "OGL v3",
+  "accessed_on": "2026-08-07",
+  "region": "United Kingdom",
+  "units": "% annual change",
+  "notes": "Consumer prices index (CPI), ONS series D7G7, dataset MM23. This is the measure the course names."
+}

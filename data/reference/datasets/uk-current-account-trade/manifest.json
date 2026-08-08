@@ -1,0 +1,11 @@
+{
+  "slug": "uk-current-account-trade",
+  "title": "Current account balance and trade openness, United Kingdom, 2015-2024",
+  "source": "world_bank",
+  "url": "https://data.worldbank.org/indicator/BN.CAB.XOKA.GD.ZS?locations=GB",
+  "licence": "CC BY 4.0",
+  "accessed_on": "2026-08-07",
+  "region": "United Kingdom",
+  "units": "% of GDP",
+  "notes": "Trade (% of GDP) is exports plus imports of goods and services as a share of GDP."
+}

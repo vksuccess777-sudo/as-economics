@@ -48,12 +48,30 @@ Back to contents page www.cambridgeinternational.org/alevel 18
 2.1.2 individual and market demand and supply
 2.1.5 causes of a shift in the demand curve (D)
 2.1.6 causes of a shift in the supply curve (S)
+3 Government microeconomic intervention (AS Level)
+Candidates will consider why and how governments intervene in markets.
+3.2 Methods and effects of government intervention in markets
+3.2.1 impact and incidence of specific indirect taxes
+3.2.2 impact and incidence of subsidies
+3.2.4 maximum and minimum prices
+3.3 Addressing income and wealth inequality
+3.3.1 difference between income as a flow concept and wealth as a stock concept
+3.3.2 measuring income and wealth inequality:
+• Gini coefficient (calculation not required)
 4 The Macroeconomy (AS Level)
 Candidates will consider national income as the most important measurement of macroeconomic
 performance.
+4.2 The circular flow of income
+4.2.2 injections and leakages (multiplier not required)
 4.3 Aggregate Demand and Aggregate Supply analysis
 4.3.8 shape of the AS curve in the short run (SRAS, upward sloping line or sweeping curve) and the long
 run (LRAS, either a vertical line or in three sections - highly elastic, upward sloping, vertical)
+4.6 Price stability
+4.6.1 definition of inflation, deflation and disinflation
+4.6.2 measurement of changes in the price level:
+• consumer price index (CPI)
+• possible difficulties in measurement
+4.6.4 causes of inflation: cost-push and demand-pull inflation
 6 International economic issues (AS Level)
 Candidates will explore the theory of international trade between countries.
 6.3 Current account of the balance of payments
@@ -85,7 +103,14 @@ Analyse examine in detail to show meaning, identify elements and the relationshi
 them
 Assess make an informed judgement
 Calculate work out from given facts, figures or information
+Define give precise meaning
+Describe state the points of a topic / give characteristics and main features
+Discuss write about issue(s) or topic(s) in depth in a structured way
 Evaluate judge or calculate the quality, importance, amount, or value of something
+Explain set out purposes or reasons / make the relationships between things clear / say why
+and/or how and support with relevant evidence
+Identify name/select/recognise
+State express in clear terms
 5 What else you need to know
 This section is an overview of other information you need to know about this syllabus.
 """

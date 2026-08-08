@@ -34,7 +34,14 @@ class Settings:
 
     groq_api_key: str | None = os.getenv("GROQ_API_KEY")
     groq_model: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-    llm_fallback_order: str = os.getenv("LLM_FALLBACK_ORDER", "groq")
+
+    gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+
+    mistral_api_key: str | None = os.getenv("MISTRAL_API_KEY")
+    mistral_model: str = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
+
+    llm_fallback_order: str = os.getenv("LLM_FALLBACK_ORDER", "groq,gemini,mistral")
 
 
 settings = Settings()

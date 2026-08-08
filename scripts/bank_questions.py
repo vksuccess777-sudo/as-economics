@@ -19,8 +19,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.config import settings  # noqa: E402
-from src.llm.exceptions import LLMRateLimitError  # noqa: E402
-from src.llm.provider import GroqProvider  # noqa: E402
+from src.llm.exceptions import AllProvidersRateLimitedError, LLMRateLimitError  # noqa: E402
+from src.llm.provider import build_provider  # noqa: E402
 from src.questions.mcq_generator import MCQGenerator  # noqa: E402
 from src.store.db import Store  # noqa: E402
 from src.syllabus.models import SyllabusSpine  # noqa: E402
@@ -81,7 +81,11 @@ def main() -> int:
         print("\nDry run — no tokens spent.")
         return 0
 
-    provider = GroqProvider(settings.groq_api_key, settings.groq_model)
+    try:
+        provider = build_provider(settings)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
     generator = MCQGenerator(provider, store, spine, seed=args.seed)
 
     total_banked = 0
@@ -98,6 +102,11 @@ def main() -> int:
                   f"Try again in about {exc.friendly_wait()}.")
             print(f"Banked {total_banked} question(s) before stopping — "
                   "they are saved, just re-run when the limit resets.")
+            return 1
+        except AllProvidersRateLimitedError as exc:
+            print(f"\nEvery configured provider is rate-limited: {exc}")
+            print(f"Banked {total_banked} question(s) before stopping — "
+                  "they are saved, just re-run once a provider frees up.")
             return 1
         except Exception as exc:  # noqa: BLE001 - one bad topic must not kill the batch
             print(f"  {code:<5} FAILED — {type(exc).__name__}: {exc}")

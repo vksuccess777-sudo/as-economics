@@ -1,0 +1,12 @@
+{
+  "provenance": "estimate",
+  "source": "Rounded working estimates for planning only. Cambridge sets grade thresholds per session, AFTER the exam, and they move with the difficulty of that paper. Replace with data/grades/as_thresholds.json holding the published thresholds for your session (Cambridge publishes them on results day; schools receive them through the School Support Hub) and set provenance to 'published'.",
+  "note": "Cambridge International AS Level is graded a to e. There is no A* at AS Level — A* is awarded on the full A Level aggregate only.",
+  "thresholds": {
+    "a": 80,
+    "b": 70,
+    "c": 60,
+    "d": 50,
+    "e": 40
+  }
+}

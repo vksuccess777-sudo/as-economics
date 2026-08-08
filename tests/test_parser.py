@@ -11,7 +11,7 @@ def spine():
 
 def test_only_as_units_are_parsed(spine):
     """The A Level content section must not leak into an AS spine."""
-    assert [u.code for u in spine.units] == ["1", "2", "4", "6"]
+    assert [u.code for u in spine.units] == ["1", "2", "3", "4", "6"]
     assert spine.topic("7.1") is None
     assert spine.topic("9.1") is None
 
@@ -84,8 +84,14 @@ def test_topics_are_sorted_numerically(spine):
 
 
 def test_command_words_are_parsed_with_wrapped_meanings(spine):
-    assert set(spine.command_words) == {"Analyse", "Assess", "Calculate", "Evaluate"}
+    assert set(spine.command_words) == {
+        "Analyse", "Assess", "Calculate", "Define", "Describe", "Discuss",
+        "Evaluate", "Explain", "Identify", "State",
+    }
     assert spine.command_words["Analyse"].endswith("them")
+    # Explain's meaning wraps onto a second line in the real table too, and it
+    # is the one the worksheet classifier leans on most.
+    assert spine.command_words["Explain"].endswith("relevant evidence")
 
 
 def test_a_level_section_can_be_parsed_separately():

@@ -1,0 +1,67 @@
+{
+  "provenance": "interim",
+  "source": "Written from the published AO definitions in the 9708 syllabus (AO1 Knowledge and understanding, AO2 Analysis, AO3 Evaluation). NOT Cambridge's levels descriptors and NOT their AO mark split. Replace with data/levels/paper2_levels.json built from the specimen Paper 2 mark scheme before treating any mark as a predicted grade.",
+  "note_on_split": "The AO maxima below are a modelling assumption: an 8-mark part carries no evaluation credit, a 12-mark part carries the evaluation. Across a 20-mark essay this gives AO1 6, AO2 9, AO3 5. The published Paper 2 AO weighting is AO1 33, AO2 37, AO3 30 across the whole paper, with Section A carrying more AO1. Adjust when you have the real allocation.",
+  "parts": {
+    "8": {
+      "AO1": {
+        "max": 4,
+        "levels": {"0": 0, "1": 1, "2": 3, "3": 4},
+        "descriptors": {
+          "0": "No relevant economic knowledge.",
+          "1": "Isolated terms used, definitions absent or wrong; the economics is asserted rather than understood.",
+          "2": "Relevant terms defined accurately; understanding is sound but incomplete or partly generic.",
+          "3": "Accurate, precise use of the relevant economic terms and concepts throughout, all clearly relevant to the question set."
+        }
+      },
+      "AO2": {
+        "max": 4,
+        "levels": {"0": 0, "1": 1, "2": 3, "3": 4},
+        "descriptors": {
+          "0": "No analysis: description or a list only.",
+          "1": "An attempt at a causal link, but the chain breaks after one step or the direction is wrong.",
+          "2": "A correct chain of reasoning is developed, though one link is left implicit or the effect on the final variable is not stated.",
+          "3": "Complete, correctly ordered chains of reasoning, each ending in a clearly stated effect; any diagram required is used to carry the analysis rather than decorate it."
+        }
+      },
+      "AO3": {
+        "max": 0,
+        "levels": {"0": 0},
+        "descriptors": {
+          "0": "This part carries no evaluation marks. Judgement here earns nothing and costs time."
+        }
+      }
+    },
+    "12": {
+      "AO1": {
+        "max": 2,
+        "levels": {"0": 0, "1": 1, "2": 2},
+        "descriptors": {
+          "0": "No relevant economic knowledge.",
+          "1": "Some relevant concepts present, defined loosely.",
+          "2": "The concepts the question turns on are identified and used accurately."
+        }
+      },
+      "AO2": {
+        "max": 5,
+        "levels": {"0": 0, "1": 2, "2": 4, "3": 5},
+        "descriptors": {
+          "0": "No analysis.",
+          "1": "One undeveloped line of reasoning, or several assertions with no chain.",
+          "2": "At least one developed chain, but the counter-case is asserted rather than analysed.",
+          "3": "Both sides analysed with developed, correctly directed chains; assumptions made explicit."
+        }
+      },
+      "AO3": {
+        "max": 5,
+        "levels": {"0": 0, "1": 2, "2": 4, "3": 5},
+        "descriptors": {
+          "0": "No judgement offered, or a judgement with no supporting reasoning.",
+          "1": "A conclusion is stated but repeats earlier analysis rather than weighing it.",
+          "2": "A supported judgement that weighs the arguments, though the criteria for deciding are left implicit.",
+          "3": "A reasoned judgement that weighs the arguments against explicit criteria, and states what the answer depends on (time period, elasticity, initial conditions, size of effect)."
+        }
+      }
+    }
+  }
+}

@@ -9,9 +9,24 @@ data/*.sqlite3
 data/papers/
 data/scripts/
 
+# Your levels ladder is derived from a Cambridge mark scheme -> local only.
+# The interim example ladder IS committed; it contains no Cambridge text.
+data/levels/*.json
+!data/levels/paper2_levels.example.json
+data/grades/*.json
+!data/grades/as_thresholds.example.json
+
 # Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
 venv/
+
+# Raw portal downloads (World Bank zips, ONS series exports). They are
+# open-licensed, so this is tidiness not law: the registered dataset under
+# data/reference/datasets/ already carries the numbers AND the manifest
+# recording where they came from, which is the part that matters.
+data/reference/API_*.zip
+data/reference/API_*.csv
+data/reference/series-*.csv

@@ -1,0 +1,11 @@
+{
+  "slug": "uk-exchange-rate-current-account",
+  "title": "Exchange rate and current account balance, United Kingdom, 2015-2024",
+  "source": "world_bank",
+  "url": "https://data.worldbank.org/indicator/PA.NUS.FCRF?locations=GB",
+  "licence": "CC BY 4.0",
+  "accessed_on": "2026-08-07",
+  "region": "United Kingdom",
+  "units": "GBP per US$ (period average); % of GDP",
+  "notes": "The exchange rate is quoted as GBP per US dollar, so a RISE in this figure is a depreciation of sterling."
+}

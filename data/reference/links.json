@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "note": "Curated deep links, one entry per link. SHIPPED EMPTY ON PURPOSE. A deep link written from memory is plausible and wrong, and a dead link at 11pm the night before a mock is worse than no link at all — so nothing goes in here until it has been opened. Until then every topic still offers a live site-scoped search link per source, built in code, which cannot rot. To add one: put the entry in, then run `python scripts/check_links.py --verify`, which HEAD-checks every URL and fails on a 404. Allowed keys are exactly topic, source, title, url — anything else is rejected at load, which is what stops a summary of the page being pasted in here alongside the link.",
+  "links": []
+}

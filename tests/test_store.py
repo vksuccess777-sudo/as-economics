@@ -133,6 +133,46 @@ def test_responses_cascade_when_an_attempt_is_deleted(store):
     assert store.counts()["response"] == 0
 
 
+def test_reset_progress_clears_attempts_and_responses_only(store):
+    """A student should be able to start fresh without losing the question
+    bank, the knowledge base, or the marker's calibration set — those cost
+    real tokens/effort to build and are not the student's own history."""
+    q = _question(store, "1.1")
+    attempt = store.start_attempt(mode="mcq_test", paper_key="paper_1")
+    store.record_response(attempt_id=attempt, question_id=q, ordinal=1,
+                          max_marks=1, awarded=0, answer_text="B")
+    store.upsert_note(topic_code="1.1", body="notes", syllabus_code="9708",
+                      syllabus_version="2026-2028")
+
+    result = store.reset_progress()
+
+    assert result == {"attempts_deleted": 1, "responses_deleted": 1}
+    counts = store.counts()
+    assert counts["attempt"] == 0
+    assert counts["response"] == 0
+    assert counts["question"] == 1  # question bank preserved
+    assert counts["note"] == 1  # knowledge base preserved
+    assert store.topic_performance() == []
+
+
+def test_reset_progress_only_touches_the_given_subject(store):
+    q_econ = _question(store, "1.1", subject="economics")
+    q_other = _question(store, "1.1", subject="business")
+    a_econ = store.start_attempt(mode="mcq_test", subject="economics")
+    a_other = store.start_attempt(mode="mcq_test", subject="business")
+    store.record_response(attempt_id=a_econ, question_id=q_econ, ordinal=1,
+                          max_marks=1, awarded=1)
+    store.record_response(attempt_id=a_other, question_id=q_other, ordinal=1,
+                          max_marks=1, awarded=1)
+
+    store.reset_progress(subject="economics")
+
+    assert store.counts()["attempt"] == 1
+    assert store.counts()["response"] == 1
+    remaining = store.attempt_history(subject="business")
+    assert len(remaining) == 1
+
+
 def test_partial_schema_is_not_reported_as_initialised(tmp_path):
     """Regression: a db holding some tables but not `question` passed the check
     and then crashed the app on its first query."""

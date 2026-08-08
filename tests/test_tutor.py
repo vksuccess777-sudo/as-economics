@@ -106,7 +106,9 @@ def test_out_of_scope_question_never_reaches_the_model(spine):
 
     assert result.is_refusal
     assert provider.prompts == [], "an out-of-scope question must not call the LLM"
-    assert "could not match" in result.text
+    # The refusal names the word it could not place. A refusal the student
+    # cannot interrogate is indistinguishable from a broken text box.
+    assert "sourdough" in result.text
 
 
 def test_a_level_question_is_diagnosed_rather_than_refused_vaguely(spine, a_level_spine):
@@ -178,7 +180,8 @@ def test_singular_and_plural_forms_match_each_other(retriever):
     assert retriever.is_in_scope("what causes shifts in demand curves")
     singular = retriever.search("demand curve")
     plural = retriever.search("demand curves")
-    assert [h.outcome.code for h in singular] == [h.outcome.code for h in plural]
+    # Compared by ref, not outcome.code: chapter documents carry no outcome.
+    assert [h.ref for h in singular] == [h.ref for h in plural]
 
 
 def test_stemming_does_not_mangle_economics_terms():

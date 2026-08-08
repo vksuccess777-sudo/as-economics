@@ -2,11 +2,12 @@
 """Verify the foundation is wired up. Run this before anything else.
 
 Checks, in order: syllabus PDF present -> spine generated -> database
-initialised -> Groq key present and the model actually reachable.
+initialised -> each configured LLM provider (Groq, Gemini, Mistral) actually
+reachable.
 
-The Groq check makes a real (tiny) call rather than just checking the key
-exists, because a key that is set but invalid fails identically to no key
-at the point where it matters.
+Each provider check makes a real (tiny) call rather than just checking the
+key exists, because a key that is set but invalid fails identically to no
+key at the point where it matters.
 """
 
 from __future__ import annotations
@@ -59,19 +60,40 @@ def main() -> int:
         store.initialise()
         print(f"{OK}  database            created at {settings.db_path}")
 
-    if not settings.groq_api_key:
-        print(f"{BAD}  groq                GROQ_API_KEY not set (copy .env.example to .env)")
-        failures += 1
-    else:
-        try:
-            from src.llm.provider import GroqProvider
+    from src.llm.provider import GeminiProvider, GroqProvider, MistralProvider
 
-            provider = GroqProvider(settings.groq_api_key, settings.groq_model)
+    provider_checks = [
+        ("groq", settings.groq_api_key, "GROQ_API_KEY",
+         lambda: GroqProvider(settings.groq_api_key, settings.groq_model),
+         settings.groq_model),
+        ("gemini", settings.gemini_api_key, "GEMINI_API_KEY",
+         lambda: GeminiProvider(settings.gemini_api_key, settings.gemini_model),
+         settings.gemini_model),
+        ("mistral", settings.mistral_api_key, "MISTRAL_API_KEY",
+         lambda: MistralProvider(settings.mistral_api_key, settings.mistral_model),
+         settings.mistral_model),
+    ]
+    order = [n.strip().lower() for n in settings.llm_fallback_order.split(",") if n.strip()]
+
+    any_configured = False
+    for name, key, env_name, factory, model in provider_checks:
+        if not key:
+            print(f"{WARN}  {name:<18} {env_name} not set — skipped")
+            continue
+        any_configured = True
+        try:
+            provider = factory()
             resp = provider.generate("Reply with the single word: ready.", max_tokens=10)
-            print(f"{OK}  groq                {settings.groq_model} -> {resp.text.strip()[:40]!r}")
+            in_order = "" if name in order else "  (not in LLM_FALLBACK_ORDER — won't be used)"
+            print(f"{OK}  {name:<18} {model} -> {resp.text.strip()[:40]!r}{in_order}")
         except Exception as exc:  # noqa: BLE001
-            print(f"{BAD}  groq                {type(exc).__name__}: {exc}")
+            print(f"{BAD}  {name:<18} {type(exc).__name__}: {exc}")
             failures += 1
+
+    if not any_configured:
+        print(f"{BAD}  llm                 no provider keys set at all "
+              "(copy .env.example to .env and fill in at least one)")
+        failures += 1
 
     print()
     print("All checks passed." if not failures else f"{failures} check(s) failed.")

@@ -100,3 +100,88 @@ FROM response r
 JOIN question q ON q.id = r.question_id
 WHERE r.awarded IS NOT NULL
 GROUP BY q.subject, q.topic_code;
+
+-- Revision notes: one row per syllabus topic, generated in batch.
+-- This is the knowledge base. It is written once and read forever, so opening
+-- a topic to revise spends no tokens. `body` is JSON with a fixed set of
+-- sections so the page can render them without parsing prose.
+CREATE TABLE IF NOT EXISTS note (
+    id              TEXT PRIMARY KEY,
+    subject         TEXT NOT NULL DEFAULT 'economics',
+    syllabus_code   TEXT NOT NULL,
+    syllabus_version TEXT NOT NULL,
+    topic_code      TEXT NOT NULL,
+    body            TEXT NOT NULL,          -- JSON: sections of the note
+    model           TEXT,                   -- which model wrote it
+    created_at      TEXT NOT NULL,
+    UNIQUE (subject, topic_code, syllabus_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_note_topic ON note (subject, topic_code);
+
+-- Worksheet topic coverage: what the school is teaching right now, as a
+-- signal for the AI Coach's priority arithmetic. Deliberately NOT a copy of
+-- the worksheet: no question text, no answers, no marks — just which topic
+-- code was matched, when, and how many items landed on it. One row per
+-- topic per worksheet upload, so frequency and recency can both be read back
+-- without ever reconstructing what was actually asked.
+CREATE TABLE IF NOT EXISTS worksheet_topic_log (
+    id              TEXT PRIMARY KEY,
+    subject         TEXT NOT NULL DEFAULT 'economics',
+    topic_code      TEXT NOT NULL,
+    logged_on       TEXT NOT NULL,          -- date, YYYY-MM-DD
+    item_count      INTEGER NOT NULL,
+    created_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_worksheet_topic_log
+    ON worksheet_topic_log (subject, topic_code, logged_on);
+
+-- What examiners actually reported, paraphrased. Cambridge's own wording is
+-- NEVER stored here: the report is read locally from data/papers/ and every
+-- line is checked against it for reused runs of words before it lands.
+--
+-- Kept in its own table rather than merged into `note.body` for two reasons:
+-- regenerating a note would silently wipe merged lines, and an observation
+-- from an examiner has to stay distinguishable from a model's guess about
+-- what loses marks. `topic_code` is nullable on purpose — the best lines in
+-- these reports ("candidates ignored the command word") belong to no topic.
+CREATE TABLE IF NOT EXISTS observed_mistake (
+    id              TEXT PRIMARY KEY,
+    subject         TEXT NOT NULL DEFAULT 'economics',
+    source          TEXT NOT NULL,          -- e.g. '9708 June 2024 examiner report'
+    paper           TEXT NOT NULL,          -- e.g. '9708/21'
+    ref             TEXT,                   -- 'Key messages', 'Question 3'
+    kind            TEXT NOT NULL
+        CHECK (kind IN ('misconception', 'technique')),
+    topic_code      TEXT,                   -- NULL = general exam technique
+    text            TEXT NOT NULL,          -- paraphrase, never the original
+    confidence      REAL NOT NULL DEFAULT 0,
+    fingerprint     TEXT NOT NULL,
+    created_at      TEXT NOT NULL,
+    UNIQUE (subject, fingerprint)
+);
+
+CREATE INDEX IF NOT EXISTS idx_observed_mistake_topic
+    ON observed_mistake (subject, topic_code);
+
+-- Questions the student has already been walked through in the Concept
+-- Tutor. NOT an attempt: no answer, no mark, no attempt_id, and nothing here
+-- ever reaches the AI Coach's weakness map — being coached through a question
+-- is not evidence of what you can do unaided.
+--
+-- It exists for one reason: a mock test is only a mock if the question is
+-- new. The Mock Test screen picks a Section A group at random from what is
+-- banked and unanswered, and without this it could serve back the exact
+-- data response the tutor had just taken apart part by part.
+CREATE TABLE IF NOT EXISTS practice_seen (
+    id              TEXT PRIMARY KEY,
+    subject         TEXT NOT NULL DEFAULT 'economics',
+    surface         TEXT NOT NULL,          -- 'concept_tutor'
+    group_id        TEXT NOT NULL,
+    seen_at         TEXT NOT NULL,
+    UNIQUE (subject, surface, group_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_practice_seen_group
+    ON practice_seen (subject, group_id);

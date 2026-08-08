@@ -1,0 +1,11 @@
+{
+  "slug": "uk-growth-unemployment",
+  "title": "Real GDP growth and unemployment, United Kingdom, 2015-2024",
+  "source": "world_bank",
+  "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG?locations=GB",
+  "licence": "CC BY 4.0",
+  "accessed_on": "2026-08-07",
+  "region": "United Kingdom",
+  "units": "annual %; % of total labour force",
+  "notes": "Unemployment is the modelled ILO estimate."
+}

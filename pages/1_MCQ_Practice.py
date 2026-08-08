@@ -62,6 +62,58 @@ if banked_total == 0:
 if "paper" not in st.session_state:
     st.caption(f"{banked_total} questions banked across {len(bank)} topics.")
 
+    # The Concept Tutor's "Practise it" button leaves a topic code here, so a
+    # student who has just read an explanation can be tested on it without
+    # hunting for it. It seeds the pickers rather than locking them: arriving
+    # focused on one topic and then wanting to widen is a normal thing to do,
+    # and a disabled control makes that look impossible.
+    handover = st.session_state.pop("practice_topic", None)
+    if handover:
+        st.session_state["mcq_chapters"] = [handover.split(".")[0]]
+        st.session_state["mcq_topics"] = [handover]
+
+    chapter_titles = {u.code: u.title for u in spine.units}
+    topic_titles = {t.code: t.title for t in spine.iter_topics()}
+
+    st.markdown("**Where the questions come from**")
+    chapters = st.multiselect(
+        "Chapters (leave empty for the whole syllabus)",
+        options=list(chapter_titles),
+        format_func=lambda c: (
+            f"Chapter {c} · {chapter_titles[c]} "
+            f"({sum(n for code, n in bank.items() if code.split('.')[0] == c)})"
+        ),
+        key="mcq_chapters",
+    )
+
+    # Topics inside the chosen chapters — or every topic when no chapter is
+    # chosen, so a single topic can be picked without first finding its
+    # chapter.
+    topic_pool = [
+        code for code in topic_titles
+        if not chapters or code.split(".")[0] in chapters
+    ]
+    # A topic left selected after its chapter is deselected is not in the
+    # options any more, and Streamlit raises on that rather than ignoring it.
+    st.session_state["mcq_topics"] = [
+        code for code in st.session_state.get("mcq_topics", []) if code in topic_pool
+    ]
+    topics = st.multiselect(
+        "Topics (leave empty for every topic in those chapters)",
+        options=topic_pool,
+        format_func=lambda c: f"{c} {topic_titles[c]} ({bank.get(c, 0)})",
+        key="mcq_topics",
+    )
+    st.caption("The number after each name is how many questions are banked for it.")
+
+    topic_filter = topics or (topic_pool if chapters else None)
+
+    available = len(
+        store.candidate_questions(
+            paper_key="paper_1", topic_codes=topic_filter, exclude_answered=True
+        )
+    )
+
     col1, col2 = st.columns(2)
     with col1:
         mode = st.radio(
@@ -73,22 +125,20 @@ if "paper" not in st.session_state:
             }[m],
         )
     with col2:
-        max_available = min(banked_total, PAPER_1_QUESTION_COUNT)
-        count = st.slider("Number of questions", 5, max(max_available, 5),
-                          min(10, max_available), step=5)
-        timed = st.checkbox("Timed (2 minutes per question, as in Paper 1)", value=False)
-
-    unit_titles = {u.code: u.title for u in spine.units}
-    picked_units = st.multiselect(
-        "Restrict to units (leave empty for all)",
-        options=list(unit_titles),
-        format_func=lambda c: f"{c}. {unit_titles[c]}",
-    )
-    topic_filter = (
-        [t.code for t in spine.iter_topics() if t.unit_code in picked_units]
-        if picked_units
-        else None
-    )
+        if available == 0:
+            st.error(
+                "No unanswered questions in that selection. Widen it, or bank "
+                "more with `scripts/bank_questions.py`."
+            )
+            st.stop()
+        ceiling = min(available, PAPER_1_QUESTION_COUNT)
+        count = st.slider(
+            "Number of questions", 1, max(ceiling, 1), min(10, ceiling)
+        )
+        timed = st.checkbox(
+            "Timed (2 minutes per question, as in Paper 1)", value=False
+        )
+        st.caption(f"{available} unanswered questions available in this selection.")
 
     if st.button("Start test", type="primary"):
         paper = build_paper(
@@ -97,7 +147,7 @@ if "paper" not in st.session_state:
         if not paper.questions:
             st.error(
                 "No unanswered questions match that selection. Bank more with "
-                "`scripts/bank_questions.py`, or widen the unit filter."
+                "`scripts/bank_questions.py`, or widen the chapter filter."
             )
             st.stop()
         st.session_state.paper = paper
