@@ -6,6 +6,7 @@
 data/*.pdf
 data/*.json
 data/*.sqlite3
+!data/as-econ.sqlite3
 data/papers/
 data/scripts/
 
